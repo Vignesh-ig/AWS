@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: rds
+
+  datasource:
+    url: jdbc:mysql://rds-test-db.cluoma6uoxg9.ap-southeast-2.rds.amazonaws.com/inventory
+    username: admin
+    password: Vicky$$0711
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
