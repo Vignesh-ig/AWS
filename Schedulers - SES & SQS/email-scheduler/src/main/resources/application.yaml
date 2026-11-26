@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: email-scheduler
+
+  main:
+    keep-alive: true
+
+aws:
+  region: ap-southeast-2
+
+  ses:
+    sender: vigneshkoffice@gmail.com
+    recipients:
+      - vigneshk7237@gmail.com
+      - vigneshkwork7@gmail.com
+      - vs696422@gmail.com
+
+scheduler:
+  report:
+    corn: "0/10 * * * * *"
+#    corn: "0 0 18 * * *"
+    zone: "Asia/Kolkata"
