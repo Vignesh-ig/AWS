@@ -1,6 +1,8 @@
 package com.aws.email_scheduler.service;
 
 import com.aws.email_scheduler.config.SesProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.ses.model.*;
@@ -9,6 +11,9 @@ import java.util.List;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+
 
     private final SesClient sesClient;
     private final SesProperties sesProperties;
@@ -22,8 +27,40 @@ public class EmailService {
 
         List<String> recipients = sesProperties.getRecipients();
 
+        long startTime = System.nanoTime();
+        int successCount = 0;
+        int failureCount = 0;
+        logger.info("Total recipients: {}", recipients.size());
+
+        for (String recipient : recipients) {
+            try {
+                sendIndividualEmail(recipient, subject, body);
+                successCount++;
+
+            } catch (Exception e) {
+                failureCount++;
+                logger.error("Failed to send email to: {}", recipient, e);
+
+            }
+        }
+
+        long endTime = System.nanoTime();
+
+        double executionTime = (endTime - startTime) / 1_000_000.0;
+
+        logger.info("Total recipients: {}", recipients.size());
+        logger.info("Successful requests: {}", successCount);
+        logger.info("Failed requests: {}", failureCount);
+        logger.info("Execution time: {} ms", executionTime);
+
+        if (failureCount > 0) {
+            throw new IllegalStateException("Email batch completed with failures");
+        }
+    }
+
+    public void sendIndividualEmail(String recipient, String subject, String body) {
         Destination destination = Destination.builder()
-                .toAddresses(recipients)
+                .toAddresses(recipient)
                 .ccAddresses("vigneshkwork7@gmail.com")
                 .build();
 
@@ -43,9 +80,7 @@ public class EmailService {
 
         SendEmailResponse sendEmailResponse = sesClient.sendEmail(sendEmailRequest);
 
-        System.out.println("Email accepted by Amazon SES!");
-        System.out.println("Total recipients: " + recipients.size());
-        System.out.println("Message ID: " + sendEmailResponse.messageId());
+        logger.info("Email accepted for: {} | Message ID: {}", recipient, sendEmailResponse.messageId());
 
     }
 }
